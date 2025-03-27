@@ -1,7 +1,7 @@
 import assert from "assert";
 
 // Choose proper "import" depending on your PL.
-// import { greedySnakeMoveBarriers } from "./t2_as/build/release.js";
+ import { greedySnakeMoveBarriers } from "./t2-as/build/release.js";
 // import { greedy_snake_move_barriers as greedySnakeMoveBarriers } from "./t2_rust/pkg/t2_rust.js"
 // [Write your own "import" for other PLs.]
 
@@ -11,17 +11,22 @@ function greedy_snake_barriers_checker(initial_snake, food_num, foods, barriers,
     let current_snake = [...initial_snake];
     let current_foods = [...foods];
     const barriers_list = [];
+    console.log("test barrier length: " + barriers.length);
     for (let i = 0; i < barriers.length; i += 2) {
+        console.log("test i: " + i);
         const x = barriers[i];
         const y = barriers[i + 1];
         if (x !== -1 && y !== -1) {
             barriers_list.push({ x, y });
         }
     }
+    console.log("barrier_list: " + barriers_list);
     let turn = 1;
 
     while (turn <= 200) {
+        console.log("ask for advice");
         const direction = greedySnakeMoveBarriers(current_snake, current_foods, barriers);
+        console.log("direction: " + direction);
 
         if (access === 0) {
             if (direction !== -1) {
@@ -82,8 +87,8 @@ function greedy_snake_barriers_checker(initial_snake, food_num, foods, barriers,
 
 assert.strictEqual(
     greedy_snake_barriers_checker(
-        [4,4,4,3,4,2,4,1], 
-        1,                  
+        [4,4,4,3,4,2,4,1],          
+        1,
         [4,5],                              
         [5,4,8,8,8,7,8,6,8,5,8,4,8,3,8,2,8,1,7,8,7,7,7,6],
         1             
@@ -93,8 +98,8 @@ assert.strictEqual(
 
 assert.strictEqual(
     greedy_snake_barriers_checker(
-        [1,4,1,3,1,2,1,1], 
-        1,                  
+        [1,4,1,3,1,2,1,1],        
+        1,
         [5,5],                              
         [2,7,2,6,3,7,3,6,4,6,5,6,6,6,7,6,4,5,4,4,4,3,5,4],
         1             
@@ -104,8 +109,8 @@ assert.strictEqual(
 
 assert.strictEqual(
     greedy_snake_barriers_checker(
-        [1,4,1,3,1,2,1,1], 
-        1,                  
+        [1,4,1,3,1,2,1,1],                
+        1,
         [1,7],                              
         [2,7,2,6,3,7,3,6,4,7,4,6,5,7,5,6,1,6,6,6,7,6,8,6],
         0             
