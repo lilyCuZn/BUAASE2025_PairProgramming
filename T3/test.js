@@ -27,7 +27,9 @@ while (!isGameOver(gameState)) {
   
   try {
     // Process one turn and get any messages
+    
     const { gameState: newGameState, messages } = processGameTurn(gameState);
+   
     gameState = newGameState;
     
     // Display any warnings or errors

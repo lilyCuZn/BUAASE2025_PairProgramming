@@ -92,6 +92,7 @@ export function processGameTurn(gameState) {
   const input = prepareBoardInput(gameState, warnings, errors);
   
   // Process turn - now pass 64-bit seed directly
+  //console.log("process_turn:" + input.n.toString() +" "+ input.snakes +" "+ input.actions +" "+ input.foods +" "+ input.seed);
   const output = process_turn(
     input.n,
     input.snakes,

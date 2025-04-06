@@ -4,8 +4,9 @@
   "description": "",
   "main": "test.js",
   "scripts": {
-    "submit-test": "node test.js",
-    "display-test": "node test-tui.js"
+    "submit-test": "node test.js single",
+    "display-test": "node test-tui.js",
+    "batch-test": "node test_100.js"
   },
   "type": "module",
   "author": "BUAAASE-2025",
