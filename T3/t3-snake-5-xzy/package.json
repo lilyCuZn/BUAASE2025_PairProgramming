@@ -1,0 +1,11 @@
+{
+  "name": "t3_rust",
+  "version": "0.1.0",
+  "files": [
+    "t3_rust_bg.wasm",
+    "t3_rust.js",
+    "t3_rust.d.ts"
+  ],
+  "main": "t3_rust.js",
+  "types": "t3_rust.d.ts"
+}

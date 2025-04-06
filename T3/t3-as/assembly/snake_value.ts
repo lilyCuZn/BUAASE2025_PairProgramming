@@ -1,9 +1,11 @@
 const x: i32[] = [0, -1, 0, 1];
 const y: i32[] = [1, 0, -1, 0];
 let a: i32[][] = new Array<i32>(11).fill(0).map(() => new Array<i32>(11).fill(0));
+let snake_map: i32[][] = new Array<i32>(11).fill(0).map(() => new Array<i32>(11).fill(0));
+let snake_map1: i32[][] = new Array<i32>(11).fill(0).map(() => new Array<i32>(11).fill(0));
 let visit: bool[][] = new Array<bool>(11).fill(false).map(() => new Array<bool>(11).fill(false));
 let mode:i32 = 0;
-let roundPublic:i32 = 33;
+let roundPublic:i32 = 13;
 //------------------------------------------//
 let snake_target_k:f64 = 1;
 let snake_target_exp:f64 = 1;
@@ -16,9 +18,10 @@ let food_center_exp:f64 = 1;
 let food_my_k:f64 = 30;
 let food_my_exp:f64 = 4;
 let snake_center_k:f64 = 1;
-let snake_center_exp:f64 = 1;
 let center_matrix_5:f64[] = [1, 1, 0.9, 0.7, 0.5];
 let center_matrix_8:f64[] = [1, 1, 1, 1, 1, 1, 1, 0.5];
+let food_center_matrix_5:f64[] = [1,1,1,0.9,0.8];
+let food_center_matrix_8:f64[] = [1,1,1,1,1,0.96,0.92,0.85,0.8];
 //------------------------------------------//
 
 
@@ -64,9 +67,9 @@ function food_other(x1:f64,y1:f64,x2:f64,y2:f64) : f64 {
 function food_center(x1:f64,y1:f64,x2:f64,y2:f64, n:i32) : f64 {
     let distance:i32 = (i32)(cal_distance(x1,y1,x2,y2));
     if (n==5) {
-        return food_center_k * center_matrix_5[distance];
+        return food_center_k * food_center_matrix_5[distance];
     } else if (n==8) {
-        return food_center_k * center_matrix_8[distance];
+        return food_center_k * food_center_matrix_8[distance];
     }
     return food_center_k * center_matrix_8[distance]; //不会到这里
     //return food_center_k / (Math.pow(cal_distance(x1,y1,x2,y2),food_center_exp) + 1);
@@ -313,7 +316,6 @@ export function greedy_snake_step(n: i32, snake: i32[], snake_num: i32, other_sn
         food_my_k = 30;
         food_my_exp = 1;
         snake_center_k = 1;
-        snake_center_exp = 10;
     }
     if (snake_num == 1) {
         snake_target_k = 5;
@@ -324,10 +326,9 @@ export function greedy_snake_step(n: i32, snake: i32[], snake_num: i32, other_sn
         food_other_exp = 1;
         food_center_k = 1;
         food_center_exp = 1;
-        food_my_k = 30;
+        food_my_k = 20;
         food_my_exp = 4;
         snake_center_k = 5;
-        snake_center_exp = 2;
     } else if (snake_num > 1) {
         snake_target_k = 5;
         snake_target_exp = 1;
@@ -336,11 +337,9 @@ export function greedy_snake_step(n: i32, snake: i32[], snake_num: i32, other_sn
         food_other_k = 5;
         food_other_exp = 1;
         food_center_k = 1;
-        //food_center_exp = 1;
         food_my_k = 3;
         food_my_exp = 1.05;
         snake_center_k = 1;
-        //snake_center_exp = 1;
     }
     if (mode == 1 && round == roundPublic) {
         console.log("snake_num:" + snake_num.toString() + " snake_center_k:" + snake_center_k.toString());
@@ -349,107 +348,165 @@ export function greedy_snake_step(n: i32, snake: i32[], snake_num: i32, other_sn
         for (let j = 0; j < 11; ++j) {
             a[i][j] = 0;
             visit[i][j] = false;
+            snake_map[i][j] = 0;
+            snake_map1[i][j] = 0;
         }
     }
     a[snake[0]][snake[1]] = 1;
     a[snake[2]][snake[3]] = 1;
     a[snake[4]][snake[5]] = 1;
-    if (round == roundPublic && mode == 1) {
-        for (let j = 1; j <=n; ++j) {
-            console.log(a[j][0].toString() + " " +a[j][1].toString() + " " +a[j][2].toString() + " " +a[j][3].toString() + " " +a[j][4].toString() + " ")
-        }}
+    // if (round == roundPublic && mode == 1) {
+    //     for (let j = 1; j <=n; ++j) {
+    //         console.log(a[j][1].toString() + " " +a[j][2].toString() + " " +a[j][3].toString() + " " +a[j][4].toString() + " " + a[j][5].toString());
+    //     }
+    // }
     for (let i = 0; i < snake_num; i++) {
         a[other_snake[i * 8]][other_snake[i * 8 + 1]] = 2;
         a[other_snake[i * 8 + 2]][other_snake[i * 8 + 3]] = 2;
         a[other_snake[i * 8 + 4]][other_snake[i * 8 + 5]] = 2;
+        
 //        console.log(other_snake[i * 8].toString() + " " + other_snake[i * 8 + 1].toString() + " " + other_snake[i * 8 + 2].toString() + " " + other_snake[i * 8 + 3].toString() + " " + other_snake[i * 8 + 4].toString() + " ")
+    }
+    for (let i = 0 ; i < snake_num; i++) {
+        let snake_life:i32 = 0;
+        for (let k = 0; k < 4; k++) {
+            let sx: i32 = other_snake[i * 8] + x[k];
+            //console.log("K1");
+            let sy: i32 = other_snake[i * 8 + 1] + y[k];
+            //console.log("K2");
+            if (sx > 0 && sx <= n && sy > 0 && sy <= n && a[sx][sy] == 0) {
+                snake_life ++;
+   //             snake_value += cal(nx, ny, sx, sy, snake_head_train) * cal_head_train;
+            }
+        }
+        if (snake_life == 1) {
+            for (let k = 0; k < 4; k++) {
+                let sx: i32 = other_snake[i * 8] + x[k];
+                //console.log("K1");
+                let sy: i32 = other_snake[i * 8 + 1] + y[k];
+                //console.log("K2");
+                if (sx > 0 && sx <= n && sy > 0 && sy <= n && a[sx][sy] == 0) {
+                    snake_map[sx][sy] = 1;
+       //             snake_value += cal(nx, ny, sx, sy, snake_head_train) * cal_head_train;
+                } 
+            }
+        }
     }
     if (round == roundPublic && mode == 1) {
         for (let j = 1; j <=n; ++j) {
             console.log(a[j][1].toString() + " " +a[j][2].toString() + " " +a[j][3].toString() + " " +a[j][4].toString() + " " +a[j][5].toString() + " ")
-        }}
+        }
+    }
     let qx:i32[] = new Array<i32>(100);
     let qy:i32[] = new Array<i32>(100);
-    let l = 0,r = 0;
+    for (let i = 0; i < snake_num; i++) {
+        snake_map1[other_snake[i * 8]][other_snake[i * 8 + 1]] = 2;
+        snake_map1[other_snake[i * 8 + 2]][other_snake[i * 8 + 3]] = 2;
+    }
+    snake_map1[snake[0]][snake[1]] = 1;
+    snake_map1[snake[2]][snake[3]] = 1;
+
+    
+
     for (let i = 1; i <= n; i++) {
         for (let j = 1; j <= n; j++) {
-            let flag1 :i32 = 0;//she
-            let flag2:i32 = 0;//qing
-            for (let k = 0; k < 4; k ++) {
+            let flag = 0;
+            let flag2 = 0;
+            for (let k = 0; k < 4; k++) {
                 let nx: i32 = i + x[k];
                 let ny: i32 = j + y[k]; 
-                if (nx > 0 && nx <= n && ny > 0 && ny <= n && a[nx][ny] == 2) {
-                    flag1 ++;
-                } else {
-                    flag2 ++;
+                if (nx > 0 && nx <= n && ny > 0 && ny <= n && snake_map1[nx][ny] == 0) {
+                    flag++;   
+                } else if (nx > 0 && nx <= n && ny > 0 && ny <= n && snake_map1[nx][ny] == 2) {
+                    flag2++;   
                 }
             }
-            if (flag1 + flag2 >= 3) {
-                if (a[i][j] == 0) {
-                    if (flag1 == 3) {
-                        a[i][j] = 4;
-                    } else {
-                        a[i][j] = 3;
-                    }
+            flag = 4 - flag;
+            if (flag >= 3 && flag2 > 0) {
+                snake_map1[i][j] = 2;
+            }
+        }
+    }
+    // let l = 0,r = 0;
+    // for (let i = 1; i <= n; i++) {
+    //     for (let j = 1; j <= n; j++) {
+    //         let flag1 :i32 = 0;//she
+    //         let flag2:i32 = 0;//qing
+    //         for (let k = 0; k < 4; k ++) {
+    //             let nx: i32 = i + x[k];
+    //             let ny: i32 = j + y[k]; 
+    //             if (nx > 0 && nx <= n && ny > 0 && ny <= n && (a[nx][ny] == 2 || a[nx][ny] == 1)) {
+    //                 flag1 ++; 
+    //             } else if (nx > 0 && nx <= n && ny > 0 && ny <= n) {
                     
-                }
+    //             } else {
+    //                 flag2 ++;
+    //             }
+    //         }
+    //         if (flag1 + flag2 >= 3) {
+    //             if (a[i][j] == 0) {
+    //                 if (flag1 == 3) {
+    //                     a[i][j] = 4;
+    //                 } else {
+    //                     a[i][j] = 3;
+    //                 }
+                    
+    //             }
                 
-                for (let k = 0; k < 4; k ++) {
-                    let nx: i32 = i + x[k];
-                    let ny: i32 = j + y[k]; 
-                    if (nx > 0 && nx <= n && ny > 0 && ny <= n && a[nx][ny] == 0) {
-                        qx[r] = i;
-                        qy[r] = j;
-                        r++;
-                    }
-                }
-            }
-        }
-    }
-    while (l < r) {
-        let sx = qx[l];
-        let sy = qy[l];
-        l++;
-        let flag1 = 0;
-        let flag2 = 0;
-        for (let k = 0; k < 4; k ++) {
-            let nx: i32 = sx + x[k];
-            let ny: i32 = sy + y[k]; 
-            if (nx > 0 && nx <= n && ny > 0 && ny <= n && a[nx][ny] == 2) {
-                flag1 ++;
-            } else {
-                flag2 ++;
-            }
-        }
-        if (flag1 + flag2 >=  3) {
-            if (a[sx][sy] != 0) {
-                continue;
-            }
-            if (a[sx][sy] == 0) {
-                if (flag1 == 3) {
-                    a[sx][sy] = 4;
-                } else {
-                    a[sx][sy] = 3;
-                }
+    //             for (let k = 0; k < 4; k ++) {
+    //                 let nx: i32 = i + x[k];
+    //                 let ny: i32 = j + y[k]; 
+    //                 if (nx > 0 && nx <= n && ny > 0 && ny <= n && a[nx][ny] == 0) {
+    //                     qx[r] = i;
+    //                     qy[r] = j;
+    //                     r++;
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }
+    // while (l < r) {
+    //     let sx = qx[l];
+    //     let sy = qy[l];
+    //     l++;
+    //     let flag1 = 0;
+    //     let flag2 = 0;
+    //     for (let k = 0; k < 4; k ++) {
+    //         let nx: i32 = sx + x[k];
+    //         let ny: i32 = sy + y[k]; 
+    //         if (nx > 0 && nx <= n && ny > 0 && ny <= n && (a[nx][ny] == 2 || a[nx][ny] == 1)) {
+    //             flag1 ++;
+    //         } else if (nx > 0 && nx <= n && ny > 0 && ny <= n) {
                 
-            }
-            for (let k = 0; k < 4; k ++) {
-                let nx: i32 = sx + x[k];
-                let ny: i32 = sy + y[k]; 
-                if (nx > 0 && nx <= n && ny > 0 && ny <= n && a[nx][ny] == 0) {
-                    qx[r] = sx;
-                    qy[r] = sy;
-                    r++;
-                }
-            }
-        }
-    }
+    //         } else {
+    //             flag2 ++;
+    //         }
+    //     }
+    //     if (flag1 + flag2 >=  3) {
+    //         if (a[sx][sy] != 0) {
+    //             continue;
+    //         }
+    //         if (a[sx][sy] == 0) {
+    //             if (flag1 == 3) {
+    //                 a[sx][sy] = 4;
+    //             } else {
+    //                 a[sx][sy] = 3;
+    //             }
+                
+    //         }
+    //         for (let k = 0; k < 4; k ++) {
+    //             let nx: i32 = sx + x[k];
+    //             let ny: i32 = sy + y[k]; 
+    //             if (nx > 0 && nx <= n && ny > 0 && ny <= n && a[nx][ny] == 0) {
+    //                 qx[r] = sx;
+    //                 qy[r] = sy;
+    //                 r++;
+    //             }
+    //         }
+    //     }
+    // }
     let dir: i32 = 0;
     let maxx: f64 = Number.NEGATIVE_INFINITY;
-    if (round == roundPublic && mode == 1) {
-    for (let j = 1; j <=n; ++j) {
-        console.log(a[j][0].toString() + " " +a[j][1].toString() + " " +a[j][2].toString() + " " +a[j][3].toString() + " " +a[j][4].toString() + " ")
-    }}
   //  console.log("\n");
     for (let i = 0; i < 4; i++) {
         let nx: i32 = snake[0] + x[i];
@@ -511,12 +568,19 @@ export function greedy_snake_step(n: i32, snake: i32[], snake_num: i32, other_sn
                 if (snake_num == 0) {
                     food_other_value = 1000;
                 }
-                temp = food_other_value / ((Math.abs((f64)(food[j * 2]) - size) + Math.abs((f64)(food[j * 2 + 1]) - size)) + 1.0) / (cal_distance((f64)(food[j * 2]),(f64)(food[j * 2 + 1]),(f64)(nx),(f64)(ny)) + 1.0);
+                temp += food_other_value * food_center((f64)(food[j * 2]),(f64)(food[j * 2 + 1]),size,size, n) 
+                * food_my((f64)(food[j * 2]),(f64)(food[j * 2 + 1]),(f64)(nx),(f64)(ny));
+                if (mode == 1 && round == roundPublic) {
+                    console.log("food_addr:" +  food[j*2].toString() + " "+food[j*2+1].toString() + " " + (food_other_value * food_center((f64)(food[j * 2]),(f64)(food[j * 2 + 1]),size,size, n) 
+                    * food_my((f64)(food[j * 2]),(f64)(food[j * 2 + 1]),(f64)(nx),(f64)(ny))).toString()+ " " + " food_other_value:"
+                + food_other_value.toString() + " food_center:" + food_center((f64)(food[j * 2]),(f64)(food[j * 2 + 1]),size,size, n).toString() + 
+            " food_my:" + food_my((f64)(food[j * 2]),(f64)(food[j * 2 + 1]),(f64)(nx),(f64)(ny)).toString());
+                }
           //      value += food_other_value / ((Math.abs((f64)(food[j * 2]) - size) + Math.abs((f64)(food[j * 2 + 1]) - size)) + 1.0) / (cal_distance((f64)(food[j * 2]),(f64)(food[j * 2 + 1]),(f64)(nx),(f64)(ny)) + 1.0);
                 value += food_other_value * food_center((f64)(food[j * 2]),(f64)(food[j * 2 + 1]),size,size, n) 
                 * food_my((f64)(food[j * 2]),(f64)(food[j * 2 + 1]),(f64)(nx),(f64)(ny));
                 if (mode == 1 && round==roundPublic) {
-                    console.log("value.3:" + temp.toString());
+                   // console.log("value.3:" + temp.toString());
                 }
             }
             if (mode == 1 && round == roundPublic) {
@@ -529,10 +593,16 @@ export function greedy_snake_step(n: i32, snake: i32[], snake_num: i32, other_sn
             if (mode == 1 && round == roundPublic) {
                 console.log("dir is: " + i.toString() + ", cal_center:" + (-cal_false_center(nx,ny,snake_num,other_snake,n)).toString());
             }
-            if (a[nx][ny] == 3) {
-                value -= 9999;
-            } else if (a[nx][ny] == 4) {
+            // if (a[nx][ny] == 3) {
+            //     value -= 9999;
+            // } else if (a[nx][ny] == 4) {
+            //     value -= 999;
+            // }
+            if (snake_map[nx][ny] == 1) {
                 value -= 999;
+            }
+            if (snake_map1[nx][ny] == 2) {
+                value -= 9999;
             }
             if (maxx < value) {
                 maxx = value;
